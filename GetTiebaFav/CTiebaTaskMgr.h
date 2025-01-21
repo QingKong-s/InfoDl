@@ -91,7 +91,8 @@ public:
 	{
 		auto& e = m_vTiebaList[idxItem];
 		if (!(e.Type == Type::TieziStandby ||
-			(e.Type == Type::TieziDownload && e.State == State::Finished)))
+			(e.Type == Type::TieziDownload && 
+				(e.State == State::Finished || e.State == State::Failed))))
 			return;
 		e.Type = Type::TieziDownload;
 		e.usProgress = 0;
@@ -163,6 +164,12 @@ public:
 			e.Task.TryCancel();
 			e.Task = {};
 		}
+	}
+
+	void TieziDownloadDelete(int idx)
+	{
+		TieziDownloadStop(idx);
+		m_vTiebaList.erase(m_vTiebaList.begin() + idx);
 	}
 
 	// 加入TieziStandby，并补全信息

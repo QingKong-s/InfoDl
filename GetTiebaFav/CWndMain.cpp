@@ -50,6 +50,14 @@ BOOL CWndMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs)
 	m_Tab.Create(nullptr, WS_CHILD | WS_VISIBLE, 0,
 		0, 0, 0, 0, hWnd, 0);
 	m_Tab.InsertItem(L"贴吧", 0);
+	m_LytBase.Add(&m_Tab, {}, eck::LF_FILL, 1u);
+
+	m_STB.Create(nullptr, WS_CHILD | WS_VISIBLE, 0,
+		0, 0, 0, m_Ds.cyStatusBar, hWnd, 0);
+	int STBParts[]{ -1 };
+	m_STB.SetParts(ARRAYSIZE(STBParts), STBParts);
+	UpdateStatusBar();
+	m_LytBase.Add(&m_STB, {}, eck::LF_FIX_HEIGHT | eck::LF_FILL_WIDTH);
 
 	MARGINS Mar{ .cyBottomHeight = m_Ds.Padding };
 	{
@@ -74,6 +82,7 @@ BOOL CWndMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs)
 			{ -1,IDTB_BRING_ERROR_TO_TOP,TBSTATE_ENABLED,BTNS_AUTOSIZE,{},0,(INT_PTR)L"置顶错误任务" },
 			{ -1,IDTB_SKIP_EXISTED_FILE,TBSTATE_ENABLED,BTNS_CHECK | BTNS_AUTOSIZE,{},0,(INT_PTR)L"跳过已存在的文件" },
 			{ -1,IDTB_SKIP_REPLY,TBSTATE_ENABLED,BTNS_CHECK | BTNS_AUTOSIZE,{},0,(INT_PTR)L"跳过楼中楼" },
+			{ -1,IDTB_CHANGE_PATH,TBSTATE_ENABLED,BTNS_AUTOSIZE,{},0,(INT_PTR)L"修改下载目录" },
 		};
 		m_TBTieba.AddButtons(ARRAYSIZE(Btn), Btn);
 
@@ -142,13 +151,14 @@ CTiebaTaskMgr::Task CWndMain::RequestFavList(eck::CRefStrA rsBDUSS, ULONGLONG Ta
 CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 	BOOL bSkipExistedFile, BOOL bSkipReply)
 {
+	eck::CRefStrW rsPath{ App->GetConfig().rsTiebaDownloadPath };
+
 	auto UiThread{ eck::CoroCaptureUiThread() };
 	UiThread.IsWakeUiThread = TRUE;
 	const auto pQueue = UiThread.GetCallbackQueue();
 	co_await eck::CoroResumeBackground();
 	auto Token{ co_await eck::CoroGetPromiseToken() };
 
-	eck::CRefStrW rsPath{ LR"(D:\tbdl\)" };
 	eck::CRefStrA rsWork{};
 	int cPage{ 1 }, occh{}, occhTop{};
 	std::vector<eck::CRefStrW> vResUrl{};
@@ -218,8 +228,9 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 
 			cPage = j["/page/total_page"].GetInt();
 			occh = rsPath.Size();
+			rsPath.AppendFormat(L"[%I64u]", Id);
 			rsPath.PushBack(j["/post_list/0/title"].GetStrW());
-			eck::LegalizePath(rsPath.Data() + occh);
+			eck::LegalizePathWithDot(rsPath.Data() + occh);
 			occhTop = rsPath.Size();
 			CreateDirectoryW(rsPath.Data(), nullptr);
 			rsPath.PushBack(LR"(\res)");
@@ -393,9 +404,10 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 					// 写楼层Json数量
 					WriteFile(hFileIndex, (LPCVOID)&cPage, sizeof(cPage), &Dummy, nullptr);
 				}
+				// 写偏移量
 				dwBuf = (DWORD)SetFilePointer(hFile, 0, nullptr, FILE_CURRENT);
 				WriteFile(hFileIndex, (LPCVOID)&dwBuf, sizeof(dwBuf), &Dummy, nullptr);
-
+				// 写楼中楼内容
 				WriteFile(hFile, (LPCVOID)rbRet.Data(), (DWORD)rbRet.Size(), &Dummy, nullptr);
 
 				Req.Reset();
@@ -448,8 +460,8 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 
 		Token.GetPromise().SetCanceller(nullptr, nullptr);
 		Token.GetPromise().OnProgress(USHORT(i * 100 / vResUrl.size()));
-		rsPath.ReSize(occh);// 弹掉资源文件名
 	FileExist:;
+		rsPath.ReSize(occh);// 弹掉资源文件名
 		pQueue->EnQueueCallback([this, Tag, i, cTotal = vResUrl.size()]
 			{
 				const auto idx = m_TiebaTaskMgr.TieziDownloadProgress(
@@ -585,6 +597,11 @@ LRESULT CWndMain::OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd)
 	return CDRF_SKIPDEFAULT;
 }
 
+void CWndMain::UpdateStatusBar()
+{
+	m_STB.SetPartText(0, App->GetConfig().rsTiebaDownloadPath.Data());
+}
+
 CWndMain::~CWndMain()
 {
 }
@@ -596,8 +613,8 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		RECT rc{ 0,0,LOWORD(lParam),HIWORD(lParam) };
-		SetWindowPos(m_Tab.HWnd, nullptr,
-			rc.left, rc.top, rc.right, rc.bottom, SWP_NOZORDER | SWP_NOACTIVATE);
+		m_LytBase.Arrange(rc.right, rc.bottom);
+		GetClientRect(m_Tab.HWnd, &rc);
 		m_Tab.AdjustRect(&rc, FALSE);
 		m_LayoutMain.Arrange(rc.left, rc.top,
 			rc.right - rc.left, rc.bottom - rc.top);
@@ -640,6 +657,11 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					for (const auto& e : m_LBTieba.GetSelRange().GetList())
 						for (int i = e.idxBegin; i <= e.idxEnd; ++i)
 						{
+							auto& e = m_TiebaTaskMgr.At(i);
+							if ((e.Type == CTiebaTaskMgr::Type::TieziDownload) && (
+								e.State != CTiebaTaskMgr::State::Finished &&
+								e.State != CTiebaTaskMgr::State::Failed))
+								continue;
 							const auto Tag = m_TiebaTaskMgr.GenerateTag();
 							m_TiebaTaskMgr.TieziDownloadBegin(Tag,
 								i,
@@ -658,6 +680,16 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							m_LBTieba.RedrawItem(i);
 						}
 					break;
+				case IDMI_DELETE:
+				{
+					const auto& List = m_LBTieba.GetSelRange().GetList();
+					for (auto it = List.rbegin(); it != List.rend(); ++it)
+						for (int i = it->idxEnd; i >= it->idxBegin; --i)
+							m_TiebaTaskMgr.TieziDownloadDelete(i);
+					m_LBTieba.SetItemCount(m_TiebaTaskMgr.Size());
+					m_LBTieba.Redraw();
+				}
+				break;
 				}
 			}
 			return 0;
@@ -681,6 +713,7 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					m_LBTieba.SetItemCount(m_TiebaTaskMgr.Size());
 				}
 				break;
+
 				case IDTB_ADD_TIEZI:
 				{
 					eck::CInputBox ib{};
@@ -704,14 +737,44 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 				}
 				break;
+
 				case IDTB_BRING_WORKING_TO_TOP:
 					m_TiebaTaskMgr.BringWorkingToTop();
 					m_LBTieba.Redraw();
 					break;
+
 				case IDTB_BRING_ERROR_TO_TOP:
 					m_TiebaTaskMgr.BringErrorToTop();
 					m_LBTieba.Redraw();
 					break;
+
+				case IDTB_CHANGE_PATH:
+				{
+					IFileOpenDialog* pfod{};
+					CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,
+						IID_PPV_ARGS(&pfod));
+					if (pfod)
+					{
+						pfod->SetOptions(FOS_PICKFOLDERS);
+						pfod->SetFileName(App->GetConfig().rsTiebaDownloadPath.Data());
+						pfod->Show(hWnd);
+						IShellItem* psi{};
+						if (SUCCEEDED(pfod->GetResult(&psi)))
+						{
+							PWSTR pszPath{};
+							if (SUCCEEDED(psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath)))
+							{
+								App->GetConfig().rsTiebaDownloadPath = pszPath;
+								App->GetConfig().rsTiebaDownloadPath.PushBackChar(L'\\');
+								UpdateStatusBar();
+								CoTaskMemFree(pszPath);
+							}
+							psi->Release();
+						}
+						pfod->Release();
+					}
+				}
+				break;
 				}
 			return 0;
 		}

@@ -7,6 +7,8 @@ class CWndMain : public eck::CForm
 {
 private:
 	eck::CTab m_Tab{};
+	eck::CStatusBar m_STB{};
+	eck::CLinearLayoutV m_LytBase{};
 	eck::CFrameLayout m_LayoutMain{};
 
 	enum
@@ -17,7 +19,7 @@ private:
 		IDTB_BRING_ERROR_TO_TOP,
 		IDTB_SKIP_EXISTED_FILE,
 		IDTB_SKIP_REPLY,
-		IDTB_EXPORT_AS_HTML,
+		IDTB_CHANGE_PATH,
 
 		IDMI_START_DOWNLOAD,
 		IDMI_DELETE,
@@ -51,6 +53,7 @@ private:
 		ECK_DS_ENTRY(cyToolBar, 28)
 		ECK_DS_ENTRY(cxToolBarBtn, 28)
 		ECK_DS_ENTRY(cy, 30)
+		ECK_DS_ENTRY(cyStatusBar, 30)
 		ECK_DS_ENTRY(Padding, 8)
 		;
 	ECK_DS_END_VAR(m_Ds)
@@ -77,6 +80,8 @@ private:
 	CTiebaTaskMgr::Task AddTieziId(ULONGLONG Tag, ULONGLONG Id);
 
 	LRESULT OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd);
+
+	void UpdateStatusBar();
 public:
 	ECK_CWND_SINGLEOWNER(CWndMain);
 	ECK_CWND_CREATE_CLS_HINST(eck::WCN_DUMMY, eck::g_hInstance);

@@ -15,6 +15,7 @@
 #include "eck\CFrameLayout.h"
 #include "eck\CTimeIdGenerator.h"
 #include "eck\CInputBox.h"
+#include "eck\CStatusBar.h"
 
 #include <vector>
 #include <algorithm>
