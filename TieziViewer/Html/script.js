@@ -137,16 +137,36 @@ function renderPage(data) {
         const author = post.author?.name_show || '匿名';
         const time = post.time ? new Date(post.time * 1000).toLocaleString() : '';
         const floorId = post.id || post.floor_id;
-        const isLz = authorId && post.author?.id === authorId;  // ✅ 是否楼主
+        const isLz = authorId && post.author?.id === authorId;// 是否楼主
 
         const contentHtml = (post.content || []).map(c => {
             if (c.type === 0) return `<p>${escapeHtml(c.text || '')}</p>`;
+            if (c.type === 1 && c.text) {
+                const url = escapeHtml(c.text);
+                return `<a href="${url}" class="post-link" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            }
             if (c.type === 2) {
                 return `<img src="res/emotion/${c.text}.png" alt="emoji" onerror="this.style.display='none'" style="width:20px;height:20px;display:inline;">`;
             }
             if (c.type === 3) {
                 const fileName = c.src.split('/').pop();
                 return `<img src="https://postres/res/${fileName}" alt="img" onerror="this.style.display='none'">`;
+            }
+            if (c.type === 4 && c.uid && c.text) {
+                return `<a href="/user/${c.uid}" class="mention">@${escapeHtml(c.text)}</a>`;
+            }
+            if (c.type === 5 && c.link) {
+                try {
+                    const url = new URL(c.link);
+                    const fileName = url.pathname.split('/').pop();
+                    return `<video controls style="max-width:100%;border-radius:6px;margin:6px 0;">
+                    <source src="https://postres/res/${fileName}" type="video/mp4">
+                    您的浏览器不支持 video 标签。
+                </video>`;
+                } catch (err) {
+                    console.error('视频链接解析失败', c.link, err);
+                    return '';
+                }
             }
             return '';
         }).join('');
@@ -194,7 +214,6 @@ function renderPage(data) {
         }
     });
 }
-
 
 function renderSubreplyWithPagination(floorId, pages) {
     const container = document.getElementById(`sub-${floorId}`);
@@ -244,12 +263,19 @@ function renderSubReplyPageHTML(data) {
         const time = r.time ? new Date(r.time * 1000).toLocaleString() : '';
         const contentHtml = (r.content || []).map(c => {
             if (c.type === 0) return `<span>${escapeHtml(c.text || '')}</span>`;
+            if (c.type === 1 && c.text) {
+                const url = escapeHtml(c.text);
+                return `<a href="${url}" class="post-link" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            }
+            if (c.type === 2) {
+                return `<img src="res/emotion/${c.text}.png" alt="emoji" onerror="this.style.display='none'" style="width:16px;height:16px;display:inline;">`;
+            }
             if (c.type === 3) {
                 const fileName = c.src.split('/').pop();
                 return `<img src="https://postres/res/${fileName}" alt="img" onerror="this.style.display='none'">`;
             }
-            if (c.type === 2) {
-                return `<img src="res/emotion/${c.text}.png" alt="emoji" onerror="this.style.display='none'" style="width:16px;height:16px;display:inline;">`;
+            if (c.type === 4 && c.uid && c.text) {
+                return `<a href="/user/${c.uid}" class="mention">@${escapeHtml(c.text)}</a>`;
             }
             return '';
         }).join('');

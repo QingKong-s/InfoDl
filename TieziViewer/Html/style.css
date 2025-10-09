@@ -195,6 +195,26 @@ body {
   margin-left: 6px;
 }
 
+.mention {
+  color: #3b5998;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mention:hover {
+  text-decoration: underline;
+}
+
+.post-link {
+  color: #1a0dab;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.post-link:hover {
+  color: #551a8b;
+}
 
 @media (prefers-color-scheme: dark) {
   body {
@@ -267,8 +287,19 @@ body {
     color: black;
   }
 
-  /* 链接、吧名颜色微调 */
   #forum-name {
     color: #ccc;
+  }
+
+  .mention {
+    color: #66aaff;
+  }
+
+  .post-link {
+    color: #66aaff;
+  }
+
+  .post-link:hover {
+    color: #99cfff;
   }
 }
