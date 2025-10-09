@@ -1,0 +1,274 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  background: #fafafa;
+  color: #333;
+}
+
+.header {
+  background: #3b5998;
+  color: white;
+  padding: 16px 20px;
+}
+
+.title-block {
+  display: inline-block;
+}
+
+#post-title {
+  margin: 0;
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+#forum-info {
+  margin-top: 6px;
+}
+
+#forum-name {
+  font-size: 1em;
+  color: #dfe3ee;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+#forum-info {
+  margin-top: 6px;
+}
+
+.post {
+  background: white;
+  margin: 10px 20px;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.post-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  margin-right: 8px;
+}
+
+.post-nick {
+  font-weight: bold;
+}
+
+.post-content img {
+  display: block;
+  max-width: 600px;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  margin: 6px 0;
+  object-fit: contain;
+}
+
+
+.post-footer {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 4px;
+}
+
+.pager {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.pager button {
+  margin: 0 8px;
+  padding: 6px 12px;
+  border: none;
+  background: #3b5998;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pager button:hover {
+  background: #5b7bd5;
+}
+
+.pager input {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.pager button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.subreply-container {
+  margin-top: 8px;
+  margin-left: 40px;
+  font-size: 0.9em;
+  background: #f4f6fb;
+  border-left: 3px solid #ccd2e0;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.subreply-pager {
+  text-align: right;
+  margin-top: 4px;
+}
+
+.subreply-pager button {
+  background: #ccc;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 2px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0;
+}
+
+.subreply-pager button:hover {
+  background: #aaa;
+}
+
+.subreply-pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+.subreply {
+  margin-bottom: 6px;
+}
+
+.sub-author {
+  font-weight: bold;
+  color: #2a4e9b;
+}
+
+.sub-time {
+  color: #888;
+  font-size: 0.8em;
+}
+
+.sub-content img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.toggle-sub-btn {
+  display: block;
+  background: #ddd;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.toggle-sub-btn:hover {
+  background: #ccc;
+}
+
+.lz-badge {
+  background: #f90;
+  color: white;
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #e0e0e0;
+  }
+
+  .header {
+    background: #2a3b7a;
+    color: #ffffff;
+  }
+
+  .post {
+    background: #1e1e1e;
+    box-shadow: 0 1px 4px rgba(255, 255, 255, 0.1);
+  }
+
+  .post-content p {
+    color: #ddd;
+  }
+
+  .post-footer {
+    color: #aaa;
+  }
+
+  .pager {
+    color: #ccc;
+  }
+
+  .pager button {
+    background: #2a3b7a;
+    color: #fff;
+  }
+
+  .pager button:hover {
+    background: #445bbf;
+  }
+
+  .pager input {
+    background: #222;
+    color: #eee;
+    border: 1px solid #555;
+  }
+
+  .subreply-container {
+    background: #1c1f27;
+    border-left-color: #3c4a68;
+  }
+
+  .subreply-pager button {
+    background: #444;
+    color: #eee;
+  }
+
+  .subreply-pager button:hover {
+    background: #666;
+  }
+
+  .toggle-sub-btn {
+    background: #333;
+    color: #eee;
+  }
+
+  .toggle-sub-btn:hover {
+    background: #555;
+  }
+
+  .lz-badge {
+    background: #ff9800;
+    color: black;
+  }
+
+  /* 链接、吧名颜色微调 */
+  #forum-name {
+    color: #ccc;
+  }
+}

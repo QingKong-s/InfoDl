@@ -99,7 +99,8 @@ BOOL GetResFileNameFromUrl(std::wstring_view svUrl, eck::CRefStrW& rsFileName)
 
 void CalcSign(_Inout_ eck::CRefStrA& rs)
 {
-	auto rsTemp = eck::UrlDecode(rs.Data(), rs.Size());
+	eck::CRefStrA rsTemp{};
+	eck::UrlDecode(rs.Data(), rs.Size(), rsTemp);
 	rsTemp.ReplaceSubStr("&", 1, "", 0);
 	rsTemp.PushBack("tiebaclient!!!");
 	eck::MD5 Md5;

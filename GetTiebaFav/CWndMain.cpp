@@ -333,7 +333,7 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 		DWORD dwBuf, Dummy;
 		dwBuf = (DWORD)vReplyId.size();
 		// 写楼层数
-		WriteFile(hFileIndex, (LPCVOID)&dwBuf, sizeof(dwBuf), &Dummy, nullptr);
+		WriteFile(hFileIndex, (PCVOID)&dwBuf, sizeof(dwBuf), &Dummy, nullptr);
 
 		for (int k{}; const auto FloorId : vReplyId)
 		{
@@ -400,15 +400,15 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
 
 					cPage = j["/page/total_page"].GetInt();
 					// 写楼层ID
-					WriteFile(hFileIndex, (LPCVOID)&FloorId, sizeof(FloorId), &Dummy, nullptr);
+					WriteFile(hFileIndex, (PCVOID)&FloorId, sizeof(FloorId), &Dummy, nullptr);
 					// 写楼层Json数量
-					WriteFile(hFileIndex, (LPCVOID)&cPage, sizeof(cPage), &Dummy, nullptr);
+					WriteFile(hFileIndex, (PCVOID)&cPage, sizeof(cPage), &Dummy, nullptr);
 				}
 				// 写偏移量
 				dwBuf = (DWORD)SetFilePointer(hFile, 0, nullptr, FILE_CURRENT);
-				WriteFile(hFileIndex, (LPCVOID)&dwBuf, sizeof(dwBuf), &Dummy, nullptr);
+				WriteFile(hFileIndex, (PCVOID)&dwBuf, sizeof(dwBuf), &Dummy, nullptr);
 				// 写楼中楼内容
-				WriteFile(hFile, (LPCVOID)rbRet.Data(), (DWORD)rbRet.Size(), &Dummy, nullptr);
+				WriteFile(hFile, (PCVOID)rbRet.Data(), (DWORD)rbRet.Size(), &Dummy, nullptr);
 
 				Req.Reset();
 			}
@@ -548,7 +548,7 @@ LRESULT CWndMain::OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd)
 	DrawTextW(nmcd.hdc, e.rsTitle.Data(), e.rsTitle.Size(), &rcText,
 		DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_END_ELLIPSIS);
 
-	COLORREF crText{ CLR_DEFAULT };
+	COLORREF crText;
 	switch (e.State)
 	{
 	case CTiebaTaskMgr::State::Failed:
@@ -557,9 +557,11 @@ LRESULT CWndMain::OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd)
 	case CTiebaTaskMgr::State::Finished:
 		crText = eck::Colorref::Green;
 		break;
+	default:
+		crText = eck::GetThreadCtx()->crDefText;
+		break;
 	}
-	if (crText != CLR_DEFAULT)
-		SetTextColor(nmcd.hdc, crText);
+	SetTextColor(nmcd.hdc, crText);
 
 	rcText.top += (m_cyFontBig + iPadding * 2);
 	SelectObject(nmcd.hdc, m_hFont);
@@ -592,8 +594,6 @@ LRESULT CWndMain::OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd)
 	}
 	break;
 	}
-	if (crText != CLR_DEFAULT)
-		SetTextColor(nmcd.hdc, eck::GetThreadCtx()->crDefText);
 	return CDRF_SKIPDEFAULT;
 }
 
@@ -751,13 +751,15 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case IDTB_CHANGE_PATH:
 				{
 					IFileOpenDialog* pfod{};
-					CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,
+					(void)CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,
 						IID_PPV_ARGS(&pfod));
 					if (pfod)
 					{
 						pfod->SetOptions(FOS_PICKFOLDERS);
 						pfod->SetFileName(App->GetConfig().rsTiebaDownloadPath.Data());
+						eck::GetThreadCtx()->bEnableDarkModeHook = FALSE;
 						pfod->Show(hWnd);
+						eck::GetThreadCtx()->bEnableDarkModeHook = TRUE;
 						IShellItem* psi{};
 						if (SUCCEEDED(pfod->GetResult(&psi)))
 						{

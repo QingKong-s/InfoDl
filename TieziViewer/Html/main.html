@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>帖子查看器</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <header class="header">
+    <div class="title-block">
+      <h1 id="post-title">加载中...</h1>
+      <div id="forum-info">
+        <span id="forum-name">所属吧：加载中...</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="post-container"></main>
+
+  <footer>
+    <div class="pager">
+      <button id="prev-btn">上一页</button>
+      <span id="page-info">第 1 页 / 共 10 页</span>
+      <button id="next-btn">下一页</button>
+      <input id="jump-input" type="number" min="1" max="10" placeholder="页码" style="width:60px;">
+      <button id="jump-btn">跳转</button>
+    </div>
+  </footer>
+</body>
+
+</html>

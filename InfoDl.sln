@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35417.141 d17.12
+VisualStudioVersion = 17.12.35417.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetTiebaFav", "GetTiebaFav\GetTiebaFav.vcxproj", "{152578C9-CA20-4A86-B818-0A0E1974DAD3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoDl", "GetTiebaFav\GetTiebaFav.vcxproj", "{152578C9-CA20-4A86-B818-0A0E1974DAD3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TieziViewer", "TieziViewer\TieziViewer.vcxproj", "{CA18F262-927E-4293-966A-8E793095FC2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{152578C9-CA20-4A86-B818-0A0E1974DAD3}.Release|x64.Build.0 = Release|x64
 		{152578C9-CA20-4A86-B818-0A0E1974DAD3}.Release|x86.ActiveCfg = Release|Win32
 		{152578C9-CA20-4A86-B818-0A0E1974DAD3}.Release|x86.Build.0 = Release|Win32
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Debug|x64.ActiveCfg = Debug|x64
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Debug|x64.Build.0 = Debug|x64
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Debug|x86.ActiveCfg = Debug|Win32
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Debug|x86.Build.0 = Debug|Win32
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Release|x64.ActiveCfg = Release|x64
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Release|x64.Build.0 = Release|x64
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Release|x86.ActiveCfg = Release|Win32
+		{CA18F262-927E-4293-966A-8E793095FC2B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
