@@ -95,6 +95,7 @@ void LoadReplyMap(const eck::CRefStrW& rsDir)
     size_t cchOut;
     const auto pszJson = Json.Write(cchOut);
     eck::WriteToFile((rsDir + L"\\replies_map.json").Data(), pszJson, cchOut);
+    free(pszJson);
 }
 
 

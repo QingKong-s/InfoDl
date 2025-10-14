@@ -525,6 +525,7 @@ LRESULT CWndMain::OnLBCustomDraw(eck::NMCUSTOMDRAWEXT& nmcd)
     if (e.rsTitle.IsEmpty())
         e.rsTitle = eck::StrU82W(e.Tiezi.rsTitleU8);
     SelectObject(nmcd.hdc, m_hFontBig);
+    SetTextColor(nmcd.hdc, eck::GetThreadCtx()->crDefText);
     DrawTextW(nmcd.hdc, e.rsTitle.Data(), e.rsTitle.Size(), &rcText,
         DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_END_ELLIPSIS);
 
@@ -711,7 +712,7 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 const auto Id = _wcstoui64(psz, nullptr, 10);
                                 m_TiebaTaskMgr.TieziRequest(Tag, Id, AddTieziId(Tag, Id));
                                 m_LBTieba.SetItemCount(m_TiebaTaskMgr.Size());
-                                return FALSE;
+                                return TRUE;
                             });
                         m_LBTieba.Redraw();
                     }

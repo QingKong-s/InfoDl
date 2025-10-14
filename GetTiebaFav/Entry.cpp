@@ -30,7 +30,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	App = new CApp{};
 	CApp::Init();
-	eck::SetMsgFilter(CApp::PreTranslateMessage);
 
 	const auto pWnd = new CWndMain{};
 	const auto hMon = eck::GetOwnerMonitor(nullptr);
