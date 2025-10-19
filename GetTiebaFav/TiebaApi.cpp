@@ -107,7 +107,7 @@ void CalcSign(_Inout_ eck::CRefStrA& rs)
 	eck::CalcMd5(rsTemp.Data(), rsTemp.Size(), &Md5);
 	const auto pszNew = rs.PushBack(6/*&sign=*/ + 32);
 	EckCopyConstStringA(pszNew, "&sign=");
-	eck::Md5ToStringLower(&Md5, pszNew + 6);
+	eck::Md5ToString(&Md5, pszNew + 6, FALSE);
 };
 
 eck::CHttpRequestAsync::Task RequestTieziInfo(eck::CHttpRequestAsync& Req,

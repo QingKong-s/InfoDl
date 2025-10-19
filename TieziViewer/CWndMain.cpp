@@ -39,11 +39,13 @@ void CWndMain::RePosControl(int cx, int cy)
 void CWndMain::RefreshPostList()
 {
     m_vItem.clear();
-    eck::CEnumFile ef{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-1-19)" };
-    eck::CRefStrW rsDir{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-1-19\)" };
+    eck::CEnumFile ef{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-10-11)" };
+    eck::CRefStrW rsDir{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-10-11\)" };
     const auto cchDir = rsDir.Size();
     ef.Enumerate(nullptr, 0, [&](eck::CEnumFile::TDefInfo& e)
         {
+            if (eck::IsDotFileName(e.FileName, e.FileNameLength))
+                return;
             eck::CRefStrW rsFile{ e.FileName, int(e.FileNameLength / sizeof(WCHAR)) };
             rsDir.PushBack(rsFile);
             m_vItem.emplace_back(std::move(rsFile), rsDir);
@@ -94,7 +96,7 @@ void LoadReplyMap(const eck::CRefStrW& rsDir)
     }
     size_t cchOut;
     const auto pszJson = Json.Write(cchOut);
-    eck::WriteToFile((rsDir + L"\\replies_map.json").Data(), pszJson, cchOut);
+    eck::WriteToFile((rsDir + L"\\replies_map.json").Data(), pszJson, (DWORD)cchOut);
     free(pszJson);
 }
 
