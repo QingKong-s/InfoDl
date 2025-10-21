@@ -29,8 +29,11 @@ void CWndMain::ClearRes()
 
 void CWndMain::RePosControl(int cx, int cy)
 {
+    const auto cyEdit = eck::DpiScale(26, m_iDpi);
+    SetWindowPos(m_EDSearch.HWnd, nullptr,
+        0, 0, m_cxPostList, cyEdit, SWP_NOMOVE | SWP_NOZORDER);
     SetWindowPos(m_LBNPost.HWnd, nullptr,
-        0, 0, m_cxPostList, cy, SWP_NOMOVE | SWP_NOZORDER);
+        0, cyEdit, m_cxPostList, cy, SWP_NOZORDER);
     if (m_pController)
         m_pController->put_Bounds({ m_cxPostList,0,cx,cy });
 
@@ -39,8 +42,9 @@ void CWndMain::RePosControl(int cx, int cy)
 void CWndMain::RefreshPostList()
 {
     m_vItem.clear();
-    eck::CEnumFile ef{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-10-11)" };
-    eck::CRefStrW rsDir{ LR"(H:\@存档的文件\@其他\贴吧存档-2025-10-11\)" };
+    eck::CEnumFile ef{ m_rsDir.Data() };
+    eck::CRefStrW rsDir{ m_rsDir.Data() };
+    rsDir.PushBackChar(L'\\');
     const auto cchDir = rsDir.Size();
     ef.Enumerate(nullptr, 0, [&](eck::CEnumFile::TDefInfo& e)
         {
@@ -103,7 +107,7 @@ void LoadReplyMap(const eck::CRefStrW& rsDir)
 
 void CWndMain::LoadPost(int idxPost)
 {
-    const auto& e = m_vItem[idxPost];
+    const auto& e = SchAtItem(idxPost);
     m_pWebView->SetVirtualHostNameToFolderMapping(
         L"postres", e.rsDir.Data(),
         COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
@@ -125,6 +129,12 @@ LRESULT CWndMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs)
     m_hFont = eck::CreateDefFont(m_iDpi);
 
     m_cxPostList = eck::DpiScale(420, m_iDpi);
+
+    m_EDSearch.SetAutoWrap(FALSE);
+    m_EDSearch.Create(nullptr, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+        0, 0, 0, 0, 0, hWnd, 0);
+    m_EDSearch.SetFrameType(eck::FrameType::Sunken);
+    m_EDSearch.HFont = m_hFont;
 
     m_LBNPost.Create(nullptr, WS_CHILD | WS_VISIBLE, 0,
         0, 0, 0, 0, hWnd, 0);
@@ -167,7 +177,7 @@ LRESULT CWndMain::OnCreate(HWND hWnd, CREATESTRUCT* pcs)
         return 0;
     }
 
-    RefreshPostList();
+    ReadConfig();
     return 0;
 }
 
@@ -221,6 +231,45 @@ HRESULT CWndMain::OnWv2ControllerCreated(HRESULT hr, ICoreWebView2Controller* pC
     return S_OK;
 }
 
+void CWndMain::SchDoSearch(eck::CRefStrW&& rsKeyword)
+{
+    if (rsKeyword == m_rsCurrSearchKeyword)
+        return;
+    m_vSearchResult.clear();
+    m_rsCurrSearchKeyword = std::move(rsKeyword);
+    if (m_rsCurrSearchKeyword.IsEmpty())
+        m_LBNPost.SetItemCount((int)m_vItem.size());
+    else
+    {
+        for (int i = 0; i < (int)m_vItem.size(); ++i)
+        {
+            const auto& e = m_vItem[i];
+            if (e.rsTitle.FindI(m_rsCurrSearchKeyword) >= 0)
+                m_vSearchResult.emplace_back(i);
+        }
+        m_LBNPost.SetItemCount((int)m_vSearchResult.size());
+    }
+    m_LBNPost.Redraw();
+}
+
+void CWndMain::ReadConfig()
+{
+    auto rbFile = eck::ReadInFile((eck::GetRunningPath() + LR"(\Config.ini)").Data());
+    if (rbFile.IsEmpty())
+        return;
+    rbFile.PushBack({ 0,0 });
+    eck::CIniExtMut Ini{};
+    if (Ini.Load((PCWSTR)rbFile.Data(), rbFile.Size() / sizeof(WCHAR) - 1) != eck::IniResult::Ok)
+        return;
+    Ini.GetKeyValue(L"Config"sv, L"RootDir"sv).GetString(m_rsDir);
+    if (!m_rsDir.IsEmpty())
+    {
+        if (m_rsDir.Back() == L'\\')
+            m_rsDir.PopBack();
+        RefreshPostList();
+    }
+}
+
 LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -233,12 +282,21 @@ LRESULT CWndMain::OnMsg(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             case eck::NM_LBN_GETDISPINFO:
             {
                 const auto p = (eck::NMLBNGETDISPINFO*)lParam;
-                const auto& e = m_vItem[p->Item.idxItem];
+                const auto& e = SchAtItem(p->Item.idxItem);
                 p->Item.pszText = e.rsTitle.Data();
                 p->Item.cchText = e.rsTitle.Size();
             }
             return TRUE;
             }
+    }
+    break;
+    case WM_COMMAND:
+    {
+        if ((HWND)lParam == m_EDSearch.GetHWND() && HIWORD(wParam) == EN_CHANGE)
+        {
+            SchDoSearch(m_EDSearch.GetText());
+            return 0;
+        }
     }
     break;
 

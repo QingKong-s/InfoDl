@@ -4,8 +4,10 @@
 #include "eck\CCommDlg.h"
 #include "eck\CUnknown.h"
 #include "eck\CListBoxNew.h"
+#include "eck\CEditExt.h"
 #include "eck\CEnumFile.h"
 #include "eck\Json.h"
+#include "eck\CIniExt.h"
 
 #include <wrl.h>
 
@@ -18,3 +20,4 @@ using eck::SafeRelease;
 using eck::ComPtr;
 
 using Microsoft::WRL::Callback;
+using namespace std::literals;

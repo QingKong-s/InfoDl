@@ -224,7 +224,7 @@ CTiebaTaskMgr::Task CWndMain::DownloadTiezi(ULONGLONG Tag, ULONGLONG Id,
             occh = rsPath.Size();
             rsPath.AppendFormat(L"[%I64u]", Id);
             rsPath.PushBack(j["/post_list/0/title"].GetStrW());
-            eck::LegalizePathWithDot(rsPath.Data() + occh);
+            eck::PazLegalize(rsPath.Data() + occh);
             occhTop = rsPath.Size();
             CreateDirectoryW(rsPath.Data(), nullptr);
             rsPath.PushBack(LR"(\res)");
