@@ -48,7 +48,7 @@ void CWndMain::RefreshPostList()
     const auto cchDir = rsDir.Size();
     ef.Enumerate(nullptr, 0, [&](eck::CEnumFile::TDefInfo& e)
         {
-            if (eck::IsDotFileName(e.FileName, e.FileNameLength))
+            if (eck::PazIsDotFileName(e.FileName, e.FileNameLength))
                 return;
             eck::CRefStrW rsFile{ e.FileName, int(e.FileNameLength / sizeof(WCHAR)) };
             rsDir.PushBack(rsFile);
@@ -66,37 +66,38 @@ void LoadReplyMap(const eck::CRefStrW& rsDir)
     if (!PathFileExistsW((rsDir + L"\\replies.map").Data()))
         return;
 
-    eck::CMutJson Json{};
-    const auto Root = Json.NewObj();
-    Json.SetRoot(Root);
+    Json::CMutDoc Json{};
+    const auto Data = Json.NewArr();
+    Json = {
+        "type", "reply_map",
+        "replies", Data
+    };
 
-    Root.ObjInsert(0, Json.NewStr("type"), Json.NewStr("reply_map"));
-
-    std::ifstream f((rsDir + L"\\replies.map").Data(), std::ios::binary);
+    eck::CFile File{};
+    File.Create((rsDir + L"\\replies.map").Data());
     uint32_t cFloor;
-    f.read((char*)&cFloor, sizeof(cFloor));
-    auto Data = Json.NewArr();
-    Root.ObjInsert(1, Json.NewStr("replies"), Data);
+    File >> cFloor;
 
     ULONGLONG FloorId;
     UINT cReplyPage, Offset;
 
-    for (uint32_t i = 0; i < cFloor; ++i) {
-        f.read((char*)&FloorId, sizeof(FloorId));
-        f.read((char*)&cReplyPage, sizeof(cReplyPage));
-
-        const auto ObjFloorReply = Json.NewObj();
-        Data.ArrPushBack(ObjFloorReply);
-        ObjFloorReply.ObjInsert(0, Json.NewStr("floor_id"), Json.NewUInt64(FloorId));
+    for (uint32_t i = 0; i < cFloor; ++i)
+    {
+        File >> FloorId >> cReplyPage;
 
         const auto ArrReplyPage = Json.NewArr();
-        ObjFloorReply.ObjInsert(1, Json.NewStr("page_offset"), ArrReplyPage);
+        const auto ObjFloorReply = Json.NewObj();
+        ObjFloorReply = {
+            "floor_id", FloorId,
+            "page_offset", ArrReplyPage
+        };
 
         for (uint32_t j = 0; j < cReplyPage; ++j)
         {
-            f.read((char*)&Offset, sizeof(Offset));
+            File >> Offset;
             ArrReplyPage.ArrPushBack(Json.NewInt(Offset));
         }
+        Data.ArrPushBack(ObjFloorReply);
     }
     size_t cchOut;
     const auto pszJson = Json.Write(cchOut);
@@ -257,9 +258,8 @@ void CWndMain::ReadConfig()
     auto rbFile = eck::ReadInFile((eck::GetRunningPath() + LR"(\Config.ini)").Data());
     if (rbFile.IsEmpty())
         return;
-    rbFile.PushBack({ 0,0 });
     eck::CIniExtMut Ini{};
-    if (Ini.Load((PCWSTR)rbFile.Data(), rbFile.Size() / sizeof(WCHAR) - 1) != eck::IniResult::Ok)
+    if (Ini.Load((PCWSTR)rbFile.Data(), rbFile.Size() / sizeof(WCHAR)) != eck::IniResult::Ok)
         return;
     Ini.GetKeyValue(L"Config"sv, L"RootDir"sv).GetString(m_rsDir);
     if (!m_rsDir.IsEmpty())

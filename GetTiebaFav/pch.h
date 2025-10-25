@@ -25,3 +25,5 @@
 
 using eck::PCVOID;
 using eck::PCBYTE;
+
+namespace Json = eck::Json;

@@ -8,6 +8,7 @@
 #include "eck\CEnumFile.h"
 #include "eck\Json.h"
 #include "eck\CIniExt.h"
+#include "eck\FileHelper.h"
 
 #include <wrl.h>
 
@@ -21,3 +22,4 @@ using eck::ComPtr;
 
 using Microsoft::WRL::Callback;
 using namespace std::literals;
+namespace Json = eck::Json;

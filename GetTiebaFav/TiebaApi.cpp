@@ -157,7 +157,7 @@ eck::CoroTask<std::vector<TIEZI>, int> RequestFavListInfo(eck::CRefStrA rsBDUSS)
 			}, &Task);
 		Token.GetPromise().OnProgress(i / 20);
 		co_await Task;
-		eck::CJson j{ Req.GetBin() };
+		Json::CDoc j{ Req.GetBin() };
 		auto aa = eck::StrU82W(Req.GetBin());
 		if (!j.IsValid())
 			break;
@@ -194,7 +194,7 @@ BOOL ExportFavoritesAsHtml(PCSTR pszBDUSS, eck::CRefStrA& rsHtml, BOOL bAddBom)
 		rsUrl.DupString(L"http://c.tieba.baidu.com/c/f/post/threadstore?");
 		rsUrl.PushBack(StrU82W(rsParam));
 		Req.DoRequest(rsUrl.Data(), L"POST");
-		eck::CJson j{ Req.Response };
+		Json::CDoc j{ Req.Response };
 		if (!j.IsValid())
 			break;
 		const auto Arr = j["/store_thread"];
